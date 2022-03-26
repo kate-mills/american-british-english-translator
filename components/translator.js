@@ -1,130 +1,155 @@
-const americanOnly = require('./american-only.js');
-const americanToBritishSpelling = require('./american-to-british-spelling.js');
-const americanToBritishTitles = require("./american-to-british-titles.js")
+const americanOnly = require('./american-only.js')
+const americanToBritishSpelling = require('./american-to-british-spelling.js')
+const americanToBritishTitles = require('./american-to-british-titles.js')
 const britishOnly = require('./british-only.js')
 
-
-
 class Translator {
-
-  highlight(translated, original=""){
-    let isUpper = original ? original[0].toUpperCase() === original[0]: null
-    let word  = isUpper ? translated[0].toUpperCase().concat(translated.slice(1)): translated
+  highlight(translated, original = '') {
+    let isUpper = original ? original[0].toUpperCase() === original[0] : null
+    let word = isUpper
+      ? translated[0].toUpperCase().concat(translated.slice(1))
+      : translated
     return `<span class=\"highlight\">${word}</span>`
   }
 
-  highLightTime(time){
-
-  }
-
-  getFirstIndex(entries, letter, index){
-    let num =  entries.findIndex(entry =>{
+  getFirstIndex(entries, letter, index) {
+    let num = entries.findIndex((entry) => {
       return entry[index][0] === letter
     })
     return num > -1 ? num : 0
   }
 
-  getLastIndex(entries, letter, index){
+  getLastIndex(entries, letter, index) {
     let last = entries.length
 
-    while(last--){
-      if(entries[last][index][0] === letter){
+    while (last--) {
+      if (entries[last][index][0] === letter) {
         return last
       }
     }
     return last
   }
 
-  sliceEntries(entries, letter, index){
+  sliceEntries(entries, letter, index) {
     let first = this.getFirstIndex(entries, letter, index)
     let last = this.getLastIndex(entries, letter, index)
     return entries.slice(first, last + 1)
   }
 
-  findWordInEntries(entries, word, index){
-    let pair =  entries.find(entry => entry[index] === word.toLowerCase())
-    return pair ? pair[Number(!index)] : pair
-  }
-  timeChecker(word, spacer){
-    let wordArr = word.split(spacer)
-    let lengthThree =  wordArr.length === 3
-    let isTimeNum = num => Number(num) > 0
-    return lengthThree && isTimeNum(wordArr[0]) && isTimeNum(wordArr[2])
+  matchEntryToText(entry) {
+    let matchInText = ''
+    if (entry.indexOf(' ') > -1) {
+      let regex = new RegExp(entry, 'g')
+      matchInText = this.text.toLowerCase().match(regex)
+    }
+    return matchInText
   }
 
-  americanToBritish(word){
+  findWordInEntries(entries, word, index) {
+    let pair = entries.find((entry) => {
+      return entry[index] === word.toLowerCase()
+    })
+    return pair ? pair[Number(!index)] : pair
+  }
+
+  timeChecker(word, spacer) {
+    //let regex = new RegExp(`[0-9]{1,2}[:.][0-9]{2}`, 'g')
+    let regex = new RegExp(`[0-9]{1,2}[${spacer}][0-9]{2}`, 'g')
+    return word.match(regex)
+  }
+
+  americanToBritish(word) {
     let time = this.timeChecker(word, ':')
-    if(time){
-      return this.highlight(time.replace(':', '.'))
+    if (time) {
+      return this.highlight(word.replace(':', '.'))
     }
     let titles = Object.entries(americanToBritishTitles)
     let american = this.sliceEntries(Object.entries(americanOnly), word[0], 0)
-    let spelling = this.sliceEntries(Object.entries(americanToBritishSpelling), word[0], 0)
+    let spelling = this.sliceEntries(
+      Object.entries(americanToBritishSpelling),
+      word[0],
+      0
+    )
     let british = Object.entries(britishOnly)
 
-    let found = this.findWordInEntries(titles, word, 0)
-      || this.findWordInEntries(british, word, 1) // american word is index 1
-      || this.findWordInEntries(american, word, 0)
-      || this.findWordInEntries(spelling, word, 0)
+    let found =
+      this.findWordInEntries(titles, word, 0) ||
+      this.findWordInEntries(british, word, 1) || // american word is index 1
+      this.findWordInEntries(american, word, 0) ||
+      this.findWordInEntries(spelling, word, 0)
 
     return found ? this.highlight(found, word) : null
   }
 
-  britishToAmerican(word){
+  britishToAmerican(word) {
+    let time = this.timeChecker(word, '.')
+    if (time) {
+      return this.highlight(word.replace('.', ':'))
+    }
+
     let titles = Object.entries(americanToBritishTitles)
     let british = this.sliceEntries(Object.entries(britishOnly), word[0], 0)
-    let spelling = this.sliceEntries(Object.entries(americanToBritishSpelling), word[0], 1)
+    let spelling = this.sliceEntries(
+      Object.entries(americanToBritishSpelling),
+      word[0],
+      1
+    )
     let american = Object.entries(americanOnly)
 
-    let found = this.findWordInEntries(titles, word, 1)
-      || this.findWordInEntries(british, word, 0) // american word is index 1
-      || this.findWordInEntries(american, word, 1)
-      || this.findWordInEntries(spelling, word, 1)
+    let found =
+      this.findWordInEntries(titles, word, 1) ||
+      this.findWordInEntries(british, word, 0) || // american word is index 1
+      this.findWordInEntries(american, word, 1) ||
+      this.findWordInEntries(spelling, word, 1)
 
     return found ? this.highlight(found, word) : null
   }
 
-  mapFromAToB(text){
+  mapFromAToB(text) {
     let changed = 0
-    //let test = text.split(' ').map(word => this.americanToBritish(word) || word)
-    let translation = text.split(' ').map((word, index)=>{
-      if(word.length > 2){
-        let translated = this.americanToBritish(word);
-        if(!translated){ return word }
+
+    let translation = text.split(' ').map((word, index) => {
+      if (word.length > 2) {
+        let translated = this.americanToBritish(word)
+        if (!translated) {
+          return word
+        }
         changed++
         return translated
       }
       return word
     })
-    return {translation: translation.join(' '), changed}
+    return { translation: translation.join(' '), changed }
   }
 
-  mapFromBToA(text){
+  mapFromBToA(text) {
     let changed = 0
-    let translation = text.split(' ').map((word, index)=>{
-      if(word.length > 2){
-        let translated = this.britishToAmerican(word);
-        if(!translated){ return word }
+    let translation = text.split(' ').map((word, index) => {
+      if (word.length > 2) {
+        let translated = this.britishToAmerican(word)
+        if (!translated) {
+          return word
+        }
         changed++
         return translated
       }
       return word
     })
-    return {translation: translation.join(' '), changed}
+    return { translation: translation.join(' '), changed }
   }
 
-
-  translate(text, locale){
+  translate(text, locale) {
     this.locale = ['american-to-british', 'british-to-american'].indexOf(locale)
+    this.text = text
 
-    if(this.locale === 0){
-      let {translation, changed} =  this.mapFromAToB(text)
-      return changed > 0 ? translation : 'Everything looks good to me!';
+    if (this.locale === 0) {
+      let { translation, changed } = this.mapFromAToB(text)
+      return changed > 0 ? translation : 'Everything looks good to me!'
+    } else {
+      let { translation, changed } = this.mapFromBToA(text)
+      return changed > 0 ? translation : 'Everything looks good to me!'
     }
-    let {translation, changed} =  this.mapFromBToA(text)
-    return changed > 0 ? translation : 'Everything looks good to me!';
-
   }
 }
 
-module.exports = Translator;
+module.exports = Translator

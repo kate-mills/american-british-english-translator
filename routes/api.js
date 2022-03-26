@@ -6,7 +6,6 @@ module.exports = function(app) {
 
   app.route('/api/translate')
     .post((req, res) => {
-      console.log(req.body)
       const { text, locale } = req.body
        if (text === '') {
         return res.json({ error: 'No text to translate' })
