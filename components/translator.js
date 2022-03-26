@@ -7,10 +7,14 @@ const britishOnly = require('./british-only.js')
 
 class Translator {
 
-  highlight(translated, original){
-    let isUpper = original[0].toUpperCase() === original[0]
+  highlight(translated, original=""){
+    let isUpper = original ? original[0].toUpperCase() === original[0]: null
     let word  = isUpper ? translated[0].toUpperCase().concat(translated.slice(1)): translated
     return `<span class=\"highlight\">${word}</span>`
+  }
+
+  highLightTime(time){
+
   }
 
   getFirstIndex(entries, letter, index){
@@ -41,8 +45,18 @@ class Translator {
     let pair =  entries.find(entry => entry[index] === word.toLowerCase())
     return pair ? pair[Number(!index)] : pair
   }
+  timeChecker(word, spacer){
+    let wordArr = word.split(spacer)
+    let lengthThree =  wordArr.length === 3
+    let isTimeNum = num => Number(num) > 0
+    return lengthThree && isTimeNum(wordArr[0]) && isTimeNum(wordArr[2])
+  }
 
   americanToBritish(word){
+    let time = this.timeChecker(word, ':')
+    if(time){
+      return this.highlight(time.replace(':', '.'))
+    }
     let titles = Object.entries(americanToBritishTitles)
     let american = this.sliceEntries(Object.entries(americanOnly), word[0], 0)
     let spelling = this.sliceEntries(Object.entries(americanToBritishSpelling), word[0], 0)
@@ -72,6 +86,7 @@ class Translator {
 
   mapFromAToB(text){
     let changed = 0
+    //let test = text.split(' ').map(word => this.americanToBritish(word) || word)
     let translation = text.split(' ').map((word, index)=>{
       if(word.length > 2){
         let translated = this.americanToBritish(word);
