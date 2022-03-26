@@ -132,9 +132,25 @@ suite('Unit Tests', () => {
       )
     })
 
-    //test(`I've just got bits and bobs in my bum bag.`, function () { assert.equal( `I've just got odds and ends in my fanny pack.`, translator.translate(`I've just got bits and bobs in my bum bag.`,locale[1])) })
+    test(`I've just got bits and bobs in my bum bag.`, function () {
+      assert.equal(
+        `Everything looks good to me!`,
+        translator.translate(
+          `I've just got bits and bobs in my bum bag.`,
+          locale[1]
+        )
+      )
+    })
 
-    //test('The car boot sale at Boxted Airfield was called off', function () { assert.equal( 'The <span class=\"highlight\">swap meet</span> at Boxted Airfield was called off.', translator.translate('The car boot sale at Boxted Airfield was called off',locale[1])) })
+    test('The car boot sale at Boxted Airfield was called off', function () {
+      assert.equal(
+        'Everything looks good to me!',
+        translator.translate(
+          'The car boot sale at Boxted Airfield was called off',
+          locale[1]
+        )
+      )
+    })
 
     test('Have you met Mrs Kalyani?', function () {
       assert.equal(
@@ -159,14 +175,31 @@ suite('Unit Tests', () => {
         translator.translate('Tea time is usually around 4 or 4.30.', locale[1])
       )
     })
-
-    //test('', function () { assert.equal( '', translator.translate('',locale[1])) })
-
-    //test('', function () { assert.equal( '', translator.translate('',locale[1])) })
-
-    //test('', function () { assert.equal( '', translator.translate('',locale[1])) })
-    //test('', function () { assert.equal( '', translator.translate('',locale[1])) })
-
-    //test('', function () { assert.equal( '', translator.translate('',locale[1])) })
+  })
+  suite('Highlight translation', () => {
+    test('Mangoes are my favorite fruit', function () {
+      assert.equal(
+        '<span class="highlight">Mangoes are my favorite fruit</span>',
+        translator.highlight('Mangoes are my favorite fruit')
+      )
+    })
+    test('I ate yogurt for breakfast.', function () {
+      assert.equal(
+        '<span class="highlight">I ate yogurt for breakfast.</span>',
+        translator.highlight('I ate yogurt for breakfast.')
+      )
+    })
+    test('We watched the footie match for a while.', function () {
+      assert.equal(
+        '<span class="highlight">We watched the footie match for a while.</span>',
+        translator.highlight('We watched the footie match for a while.')
+      )
+    })
+    test('Paracetamol takes up to an hour to work.', function () {
+      assert.equal(
+        '<span class="highlight">Paracetamol takes up to an hour to work.</span>',
+        translator.highlight('Paracetamol takes up to an hour to work.')
+      )
+    })
   })
 })

@@ -36,15 +36,6 @@ class Translator {
     return entries.slice(first, last + 1)
   }
 
-  matchEntryToText(entry) {
-    let matchInText = ''
-    if (entry.indexOf(' ') > -1) {
-      let regex = new RegExp(entry, 'g')
-      matchInText = this.text.toLowerCase().match(regex)
-    }
-    return matchInText
-  }
-
   findWordInEntries(entries, word, index) {
     let pair = entries.find((entry) => {
       return entry[index] === word.toLowerCase()
@@ -53,14 +44,12 @@ class Translator {
   }
 
   timeChecker(word, spacer) {
-    //let regex = new RegExp(`[0-9]{1,2}[:.][0-9]{2}`, 'g')
     let regex = new RegExp(`[0-9]{1,2}[${spacer}][0-9]{2}`, 'g')
     return word.match(regex)
   }
 
   americanToBritish(word) {
-    let time = this.timeChecker(word, ':')
-    if (time) {
+    if (this.timeChecker(word, ':')) {
       return this.highlight(word.replace(':', '.'))
     }
     let titles = Object.entries(americanToBritishTitles)
@@ -71,7 +60,6 @@ class Translator {
       0
     )
     let british = Object.entries(britishOnly)
-
     let found =
       this.findWordInEntries(titles, word, 0) ||
       this.findWordInEntries(british, word, 1) || // american word is index 1
@@ -82,11 +70,9 @@ class Translator {
   }
 
   britishToAmerican(word) {
-    let time = this.timeChecker(word, '.')
-    if (time) {
+    if (this.timeChecker(word, '.')) {
       return this.highlight(word.replace('.', ':'))
     }
-
     let titles = Object.entries(americanToBritishTitles)
     let british = this.sliceEntries(Object.entries(britishOnly), word[0], 0)
     let spelling = this.sliceEntries(
@@ -139,16 +125,12 @@ class Translator {
   }
 
   translate(text, locale) {
-    this.locale = ['american-to-british', 'british-to-american'].indexOf(locale)
-    this.text = text
+    let index = ['american-to-british', 'british-to-american'].indexOf(locale)
 
-    if (this.locale === 0) {
-      let { translation, changed } = this.mapFromAToB(text)
-      return changed > 0 ? translation : 'Everything looks good to me!'
-    } else {
-      let { translation, changed } = this.mapFromBToA(text)
-      return changed > 0 ? translation : 'Everything looks good to me!'
-    }
+    let { translation, changed } =
+      index === 0 ? this.mapFromAToB(text) : this.mapFromBToA(text)
+
+    return changed > 0 ? translation : 'Everything looks good to me!'
   }
 }
 
